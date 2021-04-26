@@ -29,7 +29,7 @@ module Docsplit
     def extract(pdfs, opts)
       extract_options opts
       FileUtils.mkdir_p @output unless File.exists?(@output)
-      [pdfs].flatten.each do |pdf|
+      [pdfs].flatten.map do |pdf|
         @pdf_name = File.basename(pdf, File.extname(pdf))
         pages = (@pages == 'all') ? 1..Docsplit.extract_length(pdf) : @pages
         if @force_ocr || (!@forbid_ocr && !contains_text?(pdf))
@@ -40,6 +40,8 @@ module Docsplit
             extract_from_ocr(pdf, @pages_to_ocr)
           end
         end
+
+        get_file_absolute_path(@pdf_name)
       end
     end
 
@@ -100,6 +102,11 @@ module Docsplit
       result = `#{command}`
       raise ExtractionFailed, result if $? != 0
       result
+    end
+
+    # Return absolute path of the pdf file
+    def get_file_absolute_path(pdf_name)
+      @output + pdf_name
     end
 
     # Run pdftotext command
